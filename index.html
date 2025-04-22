@@ -1,0 +1,303 @@
+<body>
+  <div class="container">
+    <h1>🌌 Starry Voice Changer Pro</h1>
+    <div class="subtitle">Transform your voice with cosmic audio effects</div>
+    
+    <div class="controls" role="region" aria-label="Audio effect controls">
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="main-tab" role="tab" aria-selected="true" aria-controls="main-tab">Main Controls</button>
+        <button class="tab" data-tab="advanced-tab" role="tab" aria-selected="false" aria-controls="advanced-tab">Advanced Effects</button>
+        <button class="tab" data-tab="about-tab" role="tab" aria-selected="false" aria-controls="about-tab">About</button>
+      </div>
+      
+      <div id="main-tab" class="tab-content active" role="tabpanel" aria-labelledby="main-tab">
+        <div class="audio-visualizer" id="visualizer" aria-label="Audio visualizer">
+          <div class="visualizer-label">Audio Visualizer</div>
+        </div>
+        
+        <div class="presets">
+          <button class="preset-btn" onclick="applyPreset('alien')" aria-label="Apply Alien preset">👽 Alien</button>
+          <button class="preset-btn" onclick="applyPreset('chipmunk')" aria-label="Apply Chipmunk preset">🐿️ Chipmunk</button>
+          <button class="preset-btn" onclick="applyPreset('robot')" aria-label="Apply Robot preset">🤖 Robot</button>
+          <button class="preset-btn" onclick="applyPreset('deep')" aria-label="Apply Deep Voice preset">🔊 Deep Voice</button>
+          <button class="preset-btn" onclick="applyPreset('demon')" aria-label="Apply Demon preset">👹 Demon</button>
+          <button class="preset-btn" onclick="applyPreset('radio')" aria-label="Apply Old Radio preset">📻 Old Radio</button>
+          <button class="preset-btn" onclick="applyPreset('concert')" aria-label="Apply Concert Hall preset">🎵 Concert Hall</button>
+          <button class="preset-btn" onclick="applyPreset('underwater')" aria-label="Apply Underwater preset">🌊 Underwater</button>
+          <button class="preset-btn" onclick="applyPreset('normal')" aria-label="Reset to normal">↩️ Reset</button>
+          <button class="preset-btn" onclick="savePreset()" aria-label="Save custom preset">💾 Save Preset</button>
+        </div>
+        
+        <div class="preset-management">
+          <h3>Saved Presets</h3>
+          <div id="preset-list" role="list"></div>
+        </div>
+        
+        <div class="effects-grid">
+          <div class="effect-card" role="group" aria-label="Basic Controls">
+            <div class="effect-header">
+              <h3 class="effect-title">🎚️ Basic Controls</h3>
+            </div>
+            <div class="slider-container">
+              <label for="volume">Volume:</label>
+              <input type="range" id="volume" min="0" max="2" step="0.05" value="1" aria-label="Volume control">
+              <span class="slider-value" id="volume-value" aria-live="polite">1.00</span>
+            </div>
+            <div class="slider-container">
+              <label for="pitch">Pitch:</label>
+              <input type="range" id="pitch" min="0.5" max="2" step="0.05" value="1" aria-label="Pitch control">
+              <span class="slider-value" id="pitch-value" aria-live="polite">1.00</span>
+            </div>
+            <div class="slider-container">
+              <label for="speed">Speed:</label>
+              <input type="range" id="speed" min="0.5" max="2" step="0.05" value="1" aria-label="Speed control">
+              <span class="slider-value" id="speed-value" aria-live="polite">1.00</span>
+            </div>
+          </div>
+          
+          <div class="effect-card" role="group" aria-label="Character Effects">
+            <div class="effect-header">
+              <h3 class="effect-title">🎭 Character Effects</h3>
+              <div class="toggle-container">
+                <label class="switch">
+                  <input type="checkbox" id="character-toggle" checked aria-label="Toggle Character Effects">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="slider-container">
+              <label for="distortion">Distortion:</label>
+              <input type="range" id="distortion" min="0" max="100" step="5" value="0" aria-label="Distortion control">
+              <span class="slider-value" id="distortion-value" aria-live="polite">0</span>
+            </div>
+            <div class="slider-container">
+              <label for="bitcrusher">Bitcrusher:</label>
+              <input type="range" id="bitcrusher" min="1" max="16" step="1" value="16" aria-label="Bitcrusher control">
+              <span class="slider-value" id="bitcrusher-value" aria-live="polite">16</span>
+            </div>
+            <div class="slider-container">
+              <label for="robot">Robot:</label>
+              <input type="range" id="robot" min="0" max="100" step="5" value="0" aria-label="Robot effect control">
+              <span class="slider-value" id="robot-value" aria-live="polite">0</span>
+            </div>
+          </div>
+          
+          <div class="effect-card" role="group" aria-label="Space Effects">
+            <div class="effect-header">
+              <h3 class="effect-title">🔊 Space Effects</h3>
+              <div class="toggle-container">
+                <label class="switch">
+                  <input type="checkbox" id="space-toggle" checked aria-label="Toggle Space Effects">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="slider-container">
+              <label for="echo">Echo:</label>
+              <input type="range" id="echo" min="0" max="0.9" step="0.05" value="0" aria-label="Echo control">
+              <span class="slider-value" id="echo-value" aria-live="polite">0.00</span>
+            </div>
+            <div class="slider-container">
+              <label for="reverb">Reverb:</label>
+              <input type="range" id="reverb" min="0" max="1" step="0.05" value="0" aria-label="Reverb control">
+              <span class="slider-value" id="reverb-value" aria-live="polite">0.00</span>
+            </div>
+            <div class="slider-container">
+              <label for="roomSize">Room Size:</label>
+              <input type="range" id="roomSize" min="0"{radical} max="1" step="0.05" value="0.5" disabled aria-label="Room Size control">
+              <span class="slider-value" id="roomSize-value" aria-live="polite">0.50</span>
+            </div>
+          </div>
+          
+          <div class="effect-card" role="group" aria-label="Modulation Effects">
+            <div class="effect-header">
+              <h3 class="effect-title">🌊 Modulation</h3>
+              <div class="toggle-container">
+                <label class="switch">
+                  <input type="checkbox" id="modulation-toggle" checked aria-label="Toggle Modulation Effects">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="slider-container">
+              <label for="chorus">Chorus:</label>
+              <input type="range" id="chorus" min="0" max="1" step="0.05" value="0" aria-label="Chorus control">
+              <span class="slider-value" id="chorus-value" aria-live="polite">0.00</span>
+            </div>
+            <div class="slider-container">
+              <label for="flanger">Flanger:</label>
+              <input type="range" id="flanger" min="0" max="1" step="0.05" value="0" aria-label="Flanger control">
+              <span class="slider-value" id="flanger-value" aria-live="polite">0.00</span>
+            </div>
+            <div class="slider-container">
+              <label for="vibrato">Vibrato:</label>
+              <input type="range" id="vibrato" min="0" max="1" step="0.05" value="0" aria-label="Vibrato control">
+              <span class="slider-value" id="vibrato-value" aria-live="polite">0.00</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="status" id="status" aria-live="assertive"></div>
+        
+        <audio id="audio-player" class="audio-player" controls aria-label="Audio playback"></audio>
+        
+        <div class="buttons">
+          <button id="startBtn" onclick="startRecording()" aria-label="Start recording">🎙️ Start Recording</button>
+          <button id="stopBtn" onclick="stopRecording()" disabled aria-label="Stop recording">⏹️ Stop Recording</button>
+          <button id="playBtn" onclick="playRecording()" disabled aria-label="Play recording">▶️ Play</button>
+          <button id="downloadBtn" onclick="downloadRecording()" disabled aria-label="Download recording">💾 Save</button>
+          <button id="resetBtn" onclick="resetEffects()" aria-label="Reset all effects">🔄 Reset All</button>
+          <button id="liveBtn" onclick="startLive()" aria-label="Start live voice changing">🎤 Live Mode</button>
+          <input type="file" id="uploadAudio" accept="audio/*" onchange="loadAudioFile()" aria-label="Upload audio file">
+        </div>
+      </div>
+      
+      <div id="advanced-tab" class="tab-content" role="tabpanel" aria-labelledby="advanced-tab">
+        <h3>Advanced Audio Effects</h3>
+        <div class="effects-grid">
+          <div class="effect-card" role="group" aria-label="Filters">
+            <div class="effect-header">
+              <h3 class="effect-title">🎛️ Filters</h3>
+              <div class="toggle-container">
+                <label class="switch">
+                  <input type="checkbox" id="filters-toggle" checked aria-label="Toggle Filters">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="slider-container">
+              <label for="lowpass">Low Pass:</label>
+              <input type="range" id="lowpass" min="20" max="20000" step="100" value="20000" aria-label="Low Pass filter control">
+              <span class="slider-value" id="lowpass-value" aria-live="polite">20000</span>
+            </div>
+            <div class="slider-container">
+              <label for="highpass">High Pass:</label>
+              <input type="range" id="highpass" min="20" max="20000" step="100" value="20" aria-label="High Pass filter control">
+              <span class="slider-value" id="highpass-value" aria-live="polite">20</span>
+            </div>
+            <div class="slider-container">
+              <label for="bandpass">Band Pass:</label>
+              <input type="range" id="bandpass" min="20" max="20000" step="100" value="5000" aria-label="Band Pass filter control">
+              <span class="slider-value" id="bandpass-value" aria-live="polite">5000</span>
+            </div>
+          </div>
+          
+          <div class="effect-card" role="group" aria-label="Dynamics">
+            <div class="effect-header">
+              <h3 class="effect-title">📊 Dynamics</h3>
+              <div class="toggle-container">
+                <label class="switch">
+                  <input type="checkbox" id="dynamics-toggle" checked aria-label="Toggle Dynamics">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="slider-container">
+              <label for="compressor">Compressor:</label>
+              <input type="range" id="compressor" min="1" max="20" step="1" value="1" aria-label="Compressor control">
+              <span class="slider-value" id="compressor-value" aria-live="polite">1</span>
+            </div>
+            <div class="slider-container">
+              <label for="gate">Noise Gate:</label>
+              <input type="range" id="gate" min="-100" max="0" step="1" value="-100" aria-label="Noise Gate control">
+              <span class="slider-value" id="gate-value" aria-live="polite">-100</span>
+            </div>
+            <div class="slider-container">
+              <label for="limiter">Limiter:</label>
+              <input type="range" id="limiter" min="0" max="1" step="0.05" value="1" aria-label="Limiter control">
+              <span class="slider-value" id="limiter-value" aria-live="polite">1.00</span>
+            </div>
+          </div>
+          
+          <div class="effect-card" role="group" aria-label="Tone">
+            <div class="effect-header">
+              <h3 class="effect-title">🎨 Tone</h3>
+              <div class="toggle-container">
+                <label class="switch">
+                  <input type="checkbox" id="tone-toggle" checked aria-label="Toggle Tone">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="slider-container">
+              <label for="bass">Bass:</label>
+              <input type="range" id="bass" min="-10" max="10" step="0.5" value="0" aria-label="Bass control">
+              <span class="slider-value" id="bass-value" aria-live="polite">0</span>
+            </div>
+            <div class="slider-container">
+              <label for="mid">Mid:</label>
+              <input type="range" id="mid" min="-10" max="10" step="0.5" value="0" aria-label="Mid control">
+              <span class="slider-value" id="mid-value" aria-live="polite">0</span>
+            </div>
+            <div class="slider-container">
+              <label for="treble">Treble:</label>
+              <input type="range" id="treble" min="-10" max="10" step="0.5" value="0" aria-label="Treble control">
+              <span class="slider-value" id="treble-value" aria-live="polite">0</span>
+            </div>
+          </div>
+          
+          <div class="effect-card" role="group" aria-label="Experimental Effects">
+            <div class="effect-header">
+              <h3 class="effect-title">🧪 Experimental</h3>
+              <div class="toggle-container">
+                <label class="switch">
+                  <input type="checkbox" id="experimental-toggle" checked aria-label="Toggle Experimental Effects">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="checkbox-container">
+              <label for="reverse-effect">Reverse Audio:</label>
+              <label class="switch">
+                <input type="checkbox" id="reverse-effect" aria-label="Toggle Reverse Audio">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="slider-container">
+              <label for="tremolo">Tremolo:</label>
+              <input type="range" id="tremolo" min="0" max="1" step="0.05" value="0" aria-label="Tremolo control">
+              <span class="slider-value" id="tremolo-value" aria-live="polite">0.00</span>
+            </div>
+            <div class="slider-container">
+              <label for="autotune">Autotune:</label>
+              <input type="range" id="autotune" min="0" max="1" step="0.05" value="0" aria-label="Autotune control">
+              <span class="slider-value" id="autotune-value" aria-live="polite">0.00</span>
+            </div>
+            <div class="slider-container">
+              <label for="autotune-scale">Autotune Scale:</label>
+              <select id="autotune-scale" aria-label="Select autotune scale">
+                <option value="C Major">C Major</option>
+                <option value="C Minor">C Minor</option>
+                <option value="Chromatic">Chromatic</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="about-tab" class="tab-content" role="tabpanel" aria-labelledby="about-tab">
+        <h3>About Starry Voice Changer Pro</h3>
+        <p>This voice changing application uses the Web Audio API and Tone.js to transform your voice in real-time.</p>
+        <p>The effects include:</p>
+        <ul style="text-align: left; display: inline-block;">
+          <li><strong>Pitch Shifting:</strong> Change voice tone (chipmunk, deep voice)</li>
+          <li><strong>Echo/Delay:</strong> Add echoes or hall effects</li>
+          <li><strong>Reverb:</strong> Simulate a room, hall, cave</li>
+          <li><strong>Distortion:</strong> Robot, radio, demon voice</li>
+          <li><strong>Flanger:</strong> Like a wavy sci-fi sound</li>
+          <li><strong>Chorus:</strong> Make it sound like multiple voices in sync</li>
+          <li><strong>Filters:</strong> Lowpass, highpass, bandpass for tone shaping</li>
+          <li><strong>Bitcrusher:</strong> Add a grainy, pixelated effect (retro!)</li>
+          <li><strong>Vibrato/Tremolo:</strong> Modulate pitch or volume over time</li>
+          <li><strong>Dynamics:</strong> Compress, limit, and gate your audio</li>
+          <li><strong>Experimental:</strong> Reverse audio, autotune with scale selection, and more</li>
+        </ul>
+        <p>Use the presets for quick effects, manage custom presets, or upload audio files!</p>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <script src="app.js"></script>
+</body>
+</html>
