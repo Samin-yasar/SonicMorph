@@ -10,7 +10,7 @@ function enableAudioControls() {
     const input = document.getElementById(slider);
     if (input) {
       input.disabled = false;
-      if (DEBUG) console.log(`main.js: Enabled slider #${slider}`);
+      if (DEBUG) console.log(`app.js: Enabled slider #${slider}`);
     }
   });
   const buttons = ['startBtn', 'liveBtn'];
@@ -18,13 +18,13 @@ function enableAudioControls() {
     const btn = document.getElementById(id);
     if (btn) {
       btn.disabled = false;
-      if (DEBUG) console.log(`main.js: Enabled control button #${id}`);
+      if (DEBUG) console.log(`app.js: Enabled control button #${id}`);
     }
   });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (DEBUG) console.log('main.js: DOMContentLoaded');
+  if (DEBUG) console.log('app.js: DOMContentLoaded');
   try {
     // Disable controls initially
     const sliders = [
@@ -55,33 +55,51 @@ document.addEventListener('DOMContentLoaded', () => {
     // Bind control buttons
     const startBtn = document.getElementById('startBtn');
     if (startBtn) {
-      startBtn.addEventListener('click', () => startRecording(initAudio, getAudioContext(), getNodes(), visualize));
-      if (DEBUG) console.log('main.js: Bound startBtn click');
+      startBtn.addEventListener('click', async () => {
+        const success = await initAudio();
+        if (success) {
+          enableAudioControls();
+          startRecording(getAudioContext(), getNodes(), visualize);
+        }
+      });
+      if (DEBUG) console.log('app.js: Bound startBtn click');
     }
     const stopBtn = document.getElementById('stopBtn');
     if (stopBtn) {
       stopBtn.addEventListener('click', stopRecording);
-      if (DEBUG) console.log('main.js: Bound stopBtn click');
+      if (DEBUG) console.log('app.js: Bound stopBtn click');
     }
     const playBtn = document.getElementById('playBtn');
     if (playBtn) {
       playBtn.addEventListener('click', playRecording);
-      if (DEBUG) console.log('main.js: Bound playBtn click');
+      if (DEBUG) console.log('app.js: Bound playBtn click');
     }
     const downloadBtn = document.getElementById('downloadBtn');
     if (downloadBtn) {
       downloadBtn.addEventListener('click', downloadRecording);
-      if (DEBUG) console.log('main.js: Bound downloadBtn click');
+      if (DEBUG) console.log('app.js: Bound downloadBtn click');
     }
     const liveBtn = document.getElementById('liveBtn');
     if (liveBtn) {
-      liveBtn.addEventListener('click', () => startLive(initAudio, getAudioContext(), getNodes(), visualize));
-      if (DEBUG) console.log('main.js: Bound liveBtn click');
+      liveBtn.addEventListener('click', async () => {
+        const success = await initAudio();
+        if (success) {
+          enableAudioControls();
+          startLive(getAudioContext(), getNodes(), visualize);
+        }
+      });
+      if (DEBUG) console.log('app.js: Bound liveBtn click');
     }
     const uploadAudio = document.getElementById('uploadAudio');
     if (uploadAudio) {
-      uploadAudio.addEventListener('change', () => loadAudioFile(initAudio, getAudioContext(), getNodes(), visualize));
-      if (DEBUG) console.log('main.js: Bound uploadAudio change');
+      uploadAudio.addEventListener('change', async () => {
+        const success = await initAudio();
+        if (success) {
+          enableAudioControls();
+          loadAudioFile(getAudioContext(), getNodes(), visualize);
+        }
+      });
+      if (DEBUG) console.log('app.js: Bound uploadAudio change');
     }
 
     // Bind effects button
@@ -91,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resetEffects();
         updateAudioEffects(getAudioContext(), getNodes(), getToneEffects(), getImpulseResponse());
       });
-      if (DEBUG) console.log('main.js: Bound resetEffects button');
+      if (DEBUG) console.log('app.js: Bound resetEffects button');
     }
 
     // Bind preset buttons
@@ -99,11 +117,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const preset = button.getAttribute('data-preset');
       const action = button.getAttribute('data-action');
       if (preset) {
-        button.addEventListener('click', () => applyPreset(preset, initAudio, () => updateAudioEffects(getAudioContext(), getNodes(), getToneEffects(), getImpulseResponse())));
-        if (DEBUG) console.log(`main.js: Bound preset button: ${preset}`);
+        button.addEventListener('click', async () => {
+          const success = await initAudio();
+          if (success) {
+            enableAudioControls();
+            applyPreset(preset, initAudio, () => updateAudioEffects(getAudioContext(), getNodes(), getToneEffects(), getImpulseResponse()));
+          }
+        });
+        if (DEBUG) console.log(`app.js: Bound preset button: ${preset}`);
       } else if (action === 'savePreset') {
         button.addEventListener('click', savePreset);
-        if (DEBUG) console.log('main.js: Bound savePreset button');
+        if (DEBUG) console.log('app.js: Bound savePreset button');
       }
     });
 
@@ -112,13 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
       (presetName) => loadPreset(presetName, () => updateAudioEffects(getAudioContext(), getNodes(), getToneEffects(), getImpulseResponse())),
       deletePreset
     );
-
-    // Enable controls after initialization
-    initAudio().then(success => {
-      if (success) enableAudioControls();
-    });
   } catch (err) {
     document.getElementById('status').textContent = `Initialization failed: ${err.message}`;
-    console.error('main.js: DOMContentLoaded error:', err);
+    console.error('app.js: DOMContentLoaded error:', err);
   }
 });
