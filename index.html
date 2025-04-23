@@ -11,6 +11,8 @@
   <canvas id="stars" aria-hidden="true"></canvas>
   <div class="container">
     <h1>Voice Changer</h1>
+    <div id="loading-indicator" class="loading-indicator" aria-label="Loading"></div>
+    <div id="live-indicator" class="live-indicator" aria-label="Recording or Live Mode"></div>
     <div class="tabs" role="tablist">
       <button class="tab active" data-tab="record" role="tab" aria-selected="true" aria-controls="record">Record</button>
       <button class="tab" data-tab="effects" role="tab" aria-selected="false" aria-controls="effects">Effects</button>
@@ -19,193 +21,108 @@
 
     <div id="record" class="tab-content active">
       <div class="controls">
-        <button id="startBtn" onclick="startRecording()" aria-label="Start recording">🎙️ Start Recording</button>
-        <button id="stopBtn" onclick="stopRecording()" disabled aria-label="Stop recording">⏹️ Stop</button>
-        <button id="playBtn" onclick="playRecording()" disabled aria-label="Play recording">▶️ Play</button>
-        <button id="downloadBtn" onclick="downloadRecording()" disabled aria-label="Download recording">💾 Download</button>
-        <button id="liveBtn" onclick="startLive()" aria-label="Start live mode">🎤 Live Mode</button>
+        <button id="startBtn" class="control-btn" data-action="startRecording" aria-label="Start recording">🎙️ Start Recording</button>
+        <button id="stopBtn" class="control-btn" data-action="stopRecording" disabled aria-label="Stop recording">⏹️ Stop</button>
+        <button id="playBtn" class="control-btn" data-action="playRecording" disabled aria-label="Play recording">▶️ Play</button>
+        <button id="downloadBtn" class="control-btn" data-action="downloadRecording" disabled aria-label="Download recording">💾 Download</button>
+        <button id="liveBtn" class="control-btn" data-action="startLive" aria-label="Start live mode">🎤 Live Mode</button>
       </div>
       <div id="visualizer" aria-hidden="true"></div>
       <audio id="audio-player" controls style="display: none;" aria-label="Audio playback"></audio>
       <div class="upload">
         <label for="uploadAudio" class="sr-only">Upload audio file</label>
-        <input type="file" id="uploadAudio" accept="audio/*" onchange="loadAudioFile()" aria-label="Upload audio file">
+        <input type="file" id="uploadAudio" accept="audio/*" aria-label="Upload audio file">
       </div>
     </div>
 
     <div id="effects" class="tab-content">
       <div class="sliders">
         <div class="slider-group">
-          <label for="volume">Volume</label>
-          <input type="range" id="volume" min="0" max="2" step="0.01" value="1">
-          <span id="volume-value">1.00</span>
+          <label for="pitchShift" class="slider-label">Pitch Shift</label>
+          <input type="range" id="pitchShift" min="-12" max="12" value="0" step="1" aria-label="Pitch Shift">
+          <span id="pitchShift-value">0.00</span>
         </div>
         <div class="slider-group">
-          <label for="pitch">Pitch</label>
-          <input type="range" id="pitch" min="0" max="2" step="0.01" value="1">
-          <span id="pitch-value">1.00</span>
+          <label for="formantShift" class="slider-label">Formant Shift</label>
+          <input type="range" id="formantShift" min="-4" max="4" value="0" step="0.1" aria-label="Formant Shift">
+          <span id="formantShift-value">0.00</span>
         </div>
         <div class="slider-group">
-          <label for="speed">Speed</label>
-          <input type="range" id="speed" min="0.5" max="2" step="0.01" value="1">
-          <span id="speed-value">1.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="distortion">Distortion</label>
-          <input type="range" id="distortion" min="0" max="100" step="1" value="0">
-          <span id="distortion-value">0.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="bitcrusher">Bitcrusher</label>
-          <input type="range" id="bitcrusher" min="1" max="16" step="1" value="16">
-          <span id="bitcrusher-value">16.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="robot">Robot</label>
-          <input type="range" id="robot" min="0" max="1" step="0.01" value="0">
-          <span id="robot-value">0.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="echo">Echo</label>
-          <input type="range" id="echo" min="0" max="1" step="0.01" value="0">
-          <span id="echo-value">0.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="reverb">Reverb</label>
-          <input type="range" id="reverb" min="0" max="1" step="0.01" value="0">
+          <label for="reverb" class="slider-label">Reverb</label>
+          <input type="range" id="reverb" min="0" max="1" value="0" step="0.01" aria-label="Reverb">
           <span id="reverb-value">0.00</span>
         </div>
         <div class="slider-group">
-          <label for="roomSize">Room Size</label>
-          <input type="range" id="roomSize" min="0" max="1" step="0.01" value="0.5">
-          <span id="roomSize-value">0.50</span>
+          <label for="distortion" class="slider-label">Distortion</label>
+          <input type="range" id="distortion" min="0" max="1" value="0" step="0.01" aria-label="Distortion">
+          <span id="distortion-value">0.00</span>
         </div>
         <div class="slider-group">
-          <label for="chorus">Chorus</label>
-          <input type="range" id="chorus" min="0" max="1" step="0.01" value="0">
+          <label for="echo" class="slider-label">Delay Time</label>
+          <input type="range" id="echo" min="0.1" max="2.0" value="0" step="0.1" aria-label="Delay Time">
+          <span id="echo-value">0.00</span>
+        </div>
+        <div class="slider-group">
+          <label for="bitcrusher" class="slider-label">Bitcrusher</label>
+          <input type="range" id="bitcrusher" min="0" max="1" value="0" step="0.01" aria-label="Bitcrusher">
+          <span id="bitcrusher-value">0.00</span>
+        </div>
+        <div class="slider-group">
+          <label for="vocoder" class="slider-label">Vocoder</label>
+          <input type="range" id="vocoder" min="0" max="1" value="0" step="0.01" aria-label="Vocoder">
+          <span id="vocoder-value">0.00</span>
+        </div>
+        <div class="slider-group">
+          <label for="chorus" class="slider-label">Chorus</label>
+          <input type="range" id="chorus" min="0" max="1" value="0" step="0.01" aria-label="Chorus">
           <span id="chorus-value">0.00</span>
         </div>
         <div class="slider-group">
-          <label for="flanger">Flanger</label>
-          <input type="range" id="flanger" min="0" max="1" step="0.01" value="0">
-          <span id="flanger-value">0.00</span>
+          <label for="phaser" class="slider-label">Phaser</label>
+          <input type="range" id="phaser" min="0" max="1" value="0" step="0.01" aria-label="Phaser">
+          <span id="phaser-value">0.00</span>
         </div>
         <div class="slider-group">
-          <label for="vibrato">Vibrato</label>
-          <input type="range" id="vibrato" min="0" max="1" step="0.01" value="0">
-          <span id="vibrato-value">0.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="lowpass">Lowpass</label>
-          <input type="range" id="lowpass" min="20" max="20000" step="10" value="20000">
-          <span id="lowpass-value">20000.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="highpass">Highpass</label>
-          <input type="range" id="highpass" min="20" max="20000" step="10" value="20">
-          <span id="highpass-value">20.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="bandpass">Bandpass</label>
-          <input type="range" id="bandpass" min="20" max="20000" step="10" value="1000">
-          <span id="bandpass-value">1000.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="compressor">Compressor</label>
-          <input type="range" id="compressor" min="1" max="20" step="0.1" value="1">
-          <span id="compressor-value">1.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="gate">Gate</label>
-          <input type="range" id="gate" min="-100" max="0" step="1" value="0">
-          <span id="gate-value">0.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="limiter">Limiter</label>
-          <input type="range" id="limiter" min="0" max="1" step="0.01" value="1">
-          <span id="limiter-value">1.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="bass">Bass</label>
-          <input type="range" id="bass" min="-40" max="40" step="1" value="0">
-          <span id="bass-value">0.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="mid">Mid</label>
-          <input type="range" id="mid" min="-40" max="40" step="1" value="0">
-          <span id="mid-value">0.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="treble">Treble</label>
-          <input type="range" id="treble" min="-40" max="40" step="1" value="0">
-          <span id="treble-value">0.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="tremolo">Tremolo</label>
-          <input type="range" id="tremolo" min="0" max="1" step="0.01" value="0">
-          <span id="tremolo-value">0.00</span>
-        </div>
-        <div class="slider-group">
-          <label for="autotune">Autotune</label>
-          <input type="range" id="autotune" min="0" max="1" step="0.01" value="0">
+          <label for="autotune" class="slider-label">Autotune</label>
+          <input type="range" id="autotune" min="0" max="1" value="0" step="0.01" aria-label="Autotune">
           <span id="autotune-value">0.00</span>
         </div>
         <div class="slider-group">
-          <label for="autotune-scale">Autotune Scale</label>
-          <select id="autotune-scale" aria-label="Select autotune scale">
-            <option value="C Major">C Major</option>
-            <option value="C Minor">C Minor</option>
-            <option value="C# Major">C# Major</option>
-            <option value="C# Minor">C# Minor</option>
-            <option value="D Major">D Major</option>
-            <option value="D Minor">D Minor</option>
-            <option value="D# Major">D# Major</option>
-            <option value="D# Minor">D# Minor</option>
-            <option value="E Major">E Major</option>
-            <option value="E Minor">E Minor</option>
-            <option value="F Major">F Major</option>
-            <option value="F Minor">F Minor</option>
-            <option value="F# Major">F# Major</option>
-            <option value="F# Minor">F# Minor</option>
-            <option value="G Major">G Major</option>
-            <option value="G Minor">G Minor</option>
-            <option value="G# Major">G# Major</option>
-            <option value="G# Minor">G# Minor</option>
-            <option value="A Major">A Major</option>
-            <option value="A Minor">A Minor</option>
-            <option value="A# Major">A# Major</option>
-            <option value="A# Minor">A# Minor</option>
-            <option value="B Major">B Major</option>
-            <option value="B Minor">B Minor</option>
-            <option value="Chromatic">Chromatic</option>
-          </select>
+          <label for="highpass" class="slider-label">High-Pass Filter</label>
+          <input type="range" id="highpass" min="0" max="1000" value="0" step="10" aria-label="High-Pass Filter">
+          <span id="highpass-value">0.00</span>
         </div>
-        <div class="checkbox-group">
-          <label for="reverse-effect">Reverse Effect</label>
-          <input type="checkbox" id="reverse-effect" aria-label="Enable reverse effect">
+        <div class="slider-group">
+          <label for="subBass" class="slider-label">Sub-Bass Boost</label>
+          <input type="range" id="subBass" min="0" max="1" value="0" step="0.01" aria-label="Sub-Bass Boost">
+          <span id="subBass-value">0.00</span>
         </div>
       </div>
-      <button onclick="resetEffects()" aria-label="Reset effects">Reset Effects</button>
+      <button class="effect-btn" data-action="resetEffects" aria-label="Reset effects">Reset Effects</button>
     </div>
 
     <div id="presets" class="tab-content">
       <div class="preset-controls">
-        <button onclick="applyPreset('alien')" aria-label="Apply Alien preset">Alien</button>
-        <button onclick="applyPreset('chipmunk')" aria-label="Apply Chipmunk preset">Chipmunk</button>
-        <button onclick="applyPreset('robot')" aria-label="Apply Robot preset">Robot</button>
-        <button onclick="applyPreset('deep')" aria-label="Apply Deep preset">Deep</button>
-        <button onclick="applyPreset('demon')" aria-label="Apply Demon preset">Demon</button>
-        <button onclick="applyPreset('radio')" aria-label="Apply Radio preset">Radio</button>
-        <button onclick="applyPreset('concert')" aria-label="Apply Concert preset">Concert</button>
-        <button onclick="applyPreset('underwater')" aria-label="Apply Underwater preset">Underwater</button>
-        <button onclick="applyPreset('normal')" aria-label="Apply Normal preset">Normal</button>
-        <button onclick="savePreset()" aria-label="Save preset">Save Preset</button>
+        <button class="preset-btn" data-preset="robot" aria-label="Apply Robot preset">Robot</button>
+        <button class="preset-btn" data-preset="alien" aria-label="Apply Alien preset">Alien</button>
+        <button class="preset-btn" data-preset="cyberbot" aria-label="Apply Cyberbot preset">Cyberbot</button>
+        <button class="preset-btn" data-preset="ghost" aria-label="Apply Ghost preset">Ghost</button>
+        <button class="preset-btn" data-preset="chipmunk" aria-label="Apply Chipmunk preset">Chipmunk</button>
+        <button class="preset-btn" data-preset="demon" aria-label="Apply Demon preset">Demon</button>
+        <button class="preset-btn" data-preset="radio" aria-label="Apply Radio preset">Radio</button>
+        <button class="preset-btn" data-preset="normal" aria-label="Apply Normal preset">Normal</button>
+        <button class="preset-btn" data-action="savePreset" aria-label="Save preset">Save Preset</button>
       </div>
       <div id="preset-list" role="list" aria-label="Saved presets"></div>
     </div>
 
     <div id="status" role="status" aria-live="polite">Ready</div>
   </div>
-  <script src="app.js"></script>
+  <script src="stars.js"></script>
+  <script src="tabs.js"></script>
+  <script src="audio.js"></script>
+  <script src="effects.js"></script>
+  <script src="recorder.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
