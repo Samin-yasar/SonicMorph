@@ -31,9 +31,11 @@ async function initAudio() {
     if (typeof Tone === 'undefined') {
       throw new Error('Tone.js not loaded. Check CDN or local script.');
     }
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive', sampleRate: 44100 });
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive', sampleRate: 44100 });
+    if (audioCtx.state === 'suspended') {
+      await audioCtx.resume();
+    }
     Tone.setContext(new Tone.Context({ latencyHint: 'interactive', lookAhead: 0 }));
-    await audioCtx.resume();
     await Tone.start();
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = isLowEndDevice ? 256 : 512;
@@ -56,22 +58,20 @@ async function initAudio() {
       pitch: new Tone.PitchShift({ pitch: 0, windowSize: 0.005, delayTime: 0 }),
       chorus: new Tone.Chorus({ frequency: 1.5, delayTime: 3.5, depth: 0.7 }),
       phaser: new Tone.Phaser({ frequency: 0.5, octaves: 3, baseFrequency: 350 }),
-      autotune: new Tone.AutoFilter({ frequency: 0, depth: 0 }) // Placeholder for autotune
+      autotune: new Tone.AutoFilter({ frequency: 0, depth: 0 })
     };
 
-    // Configure audio nodes
     audioNodes.highpass.type = 'highpass';
     audioNodes.highpass.frequency.setValueAtTime(0, audioCtx.currentTime);
     audioNodes.subBass.type = 'lowshelf';
     audioNodes.subBass.frequency.setValueAtTime(100, audioCtx.currentTime);
     audioNodes.subBass.gain.setValueAtTime(0, audioCtx.currentTime);
-    audioNodes.vocoderCarrier.type = 'sawtooth'; // More complex carrier for robotic effect
+    audioNodes.vocoderCarrier.type = 'sawtooth';
     audioNodes.vocoderCarrier.frequency.setValueAtTime(440, audioCtx.currentTime);
     audioNodes.vocoderCarrier.start();
     audioNodes.vocoderGain.gain.setValueAtTime(0, audioCtx.currentTime);
     audioNodes.noiseGain.gain.setValueAtTime(0, audioCtx.currentTime);
 
-    // White noise for Radio preset
     const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
     const noiseData = noiseBuffer.getChannelData(0);
     for (let i = 0; i < noiseData.length; i++) {
@@ -81,7 +81,6 @@ async function initAudio() {
     audioNodes.noise.loop = true;
     audioNodes.noise.start();
 
-    // Bitcrusher effect (sample rate reduction simulation)
     let lastSample = 0;
     let phase = 0;
     audioNodes.bitcrusher.onaudioprocess = (e) => {
@@ -102,7 +101,6 @@ async function initAudio() {
       }
     };
 
-    // Audio processing chain
     const chain = [
       audioNodes.gain,
       audioNodes.distortion,
@@ -126,7 +124,6 @@ async function initAudio() {
 
     createImpulseResponse();
 
-    // Setup visualizer
     const visualizerDiv = document.getElementById('visualizer');
     if (visualizerDiv) {
       visualizerCanvas = document.createElement('canvas');
@@ -207,7 +204,6 @@ function visualize(isRecording, isLive, uploadedSource) {
   draw();
 }
 
-// Export for other modules
 window.AudioManager = {
   init: initAudio,
   getAudioContext: () => audioCtx,
