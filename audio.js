@@ -47,10 +47,12 @@ async function initAudio() {
       echo: audioCtx.createDelay(2.0),
       highpass: audioCtx.createBiquadFilter(),
       subBass: audioCtx.createBiquadFilter(),
+      vocoderModulator: audioCtx.createGain(),
       vocoderCarrier: audioCtx.createOscillator(),
       vocoderGain: audioCtx.createGain(),
-      ringMod: audioCtx.createOscillator(),
-      ringModGain: audioCtx.createGain()
+      bitcrusher: audioCtx.createScriptProcessor(4096, 1, 1),
+      noise: audioCtx.createBufferSource(),
+      noiseGain: audioCtx.createGain()
     };
     toneEffects = {
       pitch: new Tone.PitchShift({ pitch: 0, windowSize: 0.005, delayTime: 0 }),
@@ -59,25 +61,57 @@ async function initAudio() {
       autotune: new Tone.AutoFilter({ frequency: 0, depth: 0 }) // Placeholder for autotune
     };
 
+    // Configure audio nodes
     audioNodes.highpass.type = 'highpass';
     audioNodes.highpass.frequency.setValueAtTime(0, audioCtx.currentTime);
     audioNodes.subBass.type = 'lowshelf';
     audioNodes.subBass.frequency.setValueAtTime(100, audioCtx.currentTime);
     audioNodes.subBass.gain.setValueAtTime(0, audioCtx.currentTime);
-    audioNodes.vocoderCarrier.type = 'sine';
+    audioNodes.vocoderCarrier.type = 'sawtooth'; // More complex carrier for robotic effect
     audioNodes.vocoderCarrier.frequency.setValueAtTime(440, audioCtx.currentTime);
     audioNodes.vocoderCarrier.start();
     audioNodes.vocoderGain.gain.setValueAtTime(0, audioCtx.currentTime);
-    audioNodes.ringMod.type = 'sine';
-    audioNodes.ringMod.frequency.setValueAtTime(30, audioCtx.currentTime);
-    audioNodes.ringMod.start();
-    audioNodes.ringModGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    audioNodes.noiseGain.gain.setValueAtTime(0, audioCtx.currentTime);
 
+    // White noise for Radio preset
+    const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+    const noiseData = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseData.length; i++) {
+      noiseData[i] = Math.random() * 2 - 1;
+    }
+    audioNodes.noise.buffer = noiseBuffer;
+    audioNodes.noise.loop = true;
+    audioNodes.noise.start();
+
+    // Bitcrusher effect (sample rate reduction simulation)
+    let lastSample = 0;
+    let phase = 0;
+    audioNodes.bitcrusher.onaudioprocess = (e) => {
+      const input = e.inputBuffer.getChannelData(0);
+      const output = e.outputBuffer.getChannelData(0);
+      const bitDepth = 1 - parseFloat(document.getElementById('bitcrusher').value);
+      const step = Math.pow(0.5, bitDepth * 8);
+      const sampleRateReduction = bitDepth * 0.9 + 0.1;
+      const phaseIncrement = sampleRateReduction * 44100 / audioCtx.sampleRate;
+
+      for (let i = 0; i < input.length; i++) {
+        phase += phaseIncrement;
+        if (phase >= 1) {
+          lastSample = Math.round(input[i] / step) * step;
+          phase -= 1;
+        }
+        output[i] = lastSample;
+      }
+    };
+
+    // Audio processing chain
     const chain = [
       audioNodes.gain,
       audioNodes.distortion,
       audioNodes.highpass,
       audioNodes.subBass,
+      audioNodes.bitcrusher,
+      audioNodes.vocoderModulator,
       audioNodes.reverb,
       audioNodes.echo,
       analyser
@@ -86,15 +120,21 @@ async function initAudio() {
       chain[i].connect(chain[i + 1]);
     }
     analyser.connect(audioCtx.destination);
+    audioNodes.vocoderModulator.connect(audioNodes.vocoderGain.gain);
     audioNodes.vocoderCarrier.connect(audioNodes.vocoderGain);
-    audioNodes.ringMod.connect(audioNodes.ringModGain);
+    audioNodes.vocoderGain.connect(analyser);
+    audioNodes.noise.connect(audioNodes.noiseGain);
+    audioNodes.noiseGain.connect(analyser);
 
     createImpulseResponse();
 
-    visualizerCanvas = document.getElementById('visualizer');
-    if (visualizerCanvas) {
+    // Setup visualizer
+    const visualizerDiv = document.getElementById('visualizer');
+    if (visualizerDiv) {
+      visualizerCanvas = document.createElement('canvas');
       visualizerCanvas.width = 800;
       visualizerCanvas.height = 120;
+      visualizerDiv.appendChild(visualizerCanvas);
       visualizerCtx = visualizerCanvas.getContext('2d');
     } else {
       console.error('audio.js: #visualizer not found');
