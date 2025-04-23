@@ -44,30 +44,61 @@ async function initAudio() {
       gain: audioCtx.createGain(),
       distortion: audioCtx.createWaveShaper(),
       reverb: audioCtx.createConvolver(),
-      echo: audioCtx.createDelay(2.0)
+      echo: audioCtx.createDelay(2.0),
+      highpass: audioCtx.createBiquadFilter(),
+      subBass: audioCtx.createBiquadFilter(),
+      vocoderCarrier: audioCtx.createOscillator(),
+      vocoderGain: audioCtx.createGain(),
+      ringMod: audioCtx.createOscillator(),
+      ringModGain: audioCtx.createGain()
     };
     toneEffects = {
-      pitch: new Tone.PitchShift({ pitch: 0, windowSize: 0.005, delayTime: 0 }).toDestination()
+      pitch: new Tone.PitchShift({ pitch: 0, windowSize: 0.005, delayTime: 0 }),
+      chorus: new Tone.Chorus({ frequency: 1.5, delayTime: 3.5, depth: 0.7 }),
+      phaser: new Tone.Phaser({ frequency: 0.5, octaves: 3, baseFrequency: 350 }),
+      autotune: new Tone.AutoFilter({ frequency: 0, depth: 0 }) // Placeholder for autotune
     };
 
-    const chain = [audioNodes.gain, audioNodes.distortion, audioNodes.reverb, audioNodes.echo, analyser];
+    audioNodes.highpass.type = 'highpass';
+    audioNodes.highpass.frequency.setValueAtTime(0, audioCtx.currentTime);
+    audioNodes.subBass.type = 'lowshelf';
+    audioNodes.subBass.frequency.setValueAtTime(100, audioCtx.currentTime);
+    audioNodes.subBass.gain.setValueAtTime(0, audioCtx.currentTime);
+    audioNodes.vocoderCarrier.type = 'sine';
+    audioNodes.vocoderCarrier.frequency.setValueAtTime(440, audioCtx.currentTime);
+    audioNodes.vocoderCarrier.start();
+    audioNodes.vocoderGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    audioNodes.ringMod.type = 'sine';
+    audioNodes.ringMod.frequency.setValueAtTime(30, audioCtx.currentTime);
+    audioNodes.ringMod.start();
+    audioNodes.ringModGain.gain.setValueAtTime(0, audioCtx.currentTime);
+
+    const chain = [
+      audioNodes.gain,
+      audioNodes.distortion,
+      audioNodes.highpass,
+      audioNodes.subBass,
+      audioNodes.reverb,
+      audioNodes.echo,
+      analyser
+    ];
     for (let i = 0; i < chain.length - 1; i++) {
       chain[i].connect(chain[i + 1]);
     }
     analyser.connect(audioCtx.destination);
+    audioNodes.vocoderCarrier.connect(audioNodes.vocoderGain);
+    audioNodes.ringMod.connect(audioNodes.ringModGain);
 
     createImpulseResponse();
 
-    visualizerCanvas = document.createElement('canvas');
-    visualizerCanvas.width = 800;
-    visualizerCanvas.height = 120;
-    const visualizerDiv = document.getElementById('visualizer');
-    if (visualizerDiv) {
-      visualizerDiv.appendChild(visualizerCanvas);
+    visualizerCanvas = document.getElementById('visualizer');
+    if (visualizerCanvas) {
+      visualizerCanvas.width = 800;
+      visualizerCanvas.height = 120;
+      visualizerCtx = visualizerCanvas.getContext('2d');
     } else {
       console.error('audio.js: #visualizer not found');
     }
-    visualizerCtx = visualizerCanvas.getContext('2d');
 
     isAudioInitialized = true;
     document.getElementById('status').textContent = 'Audio initialized successfully';
