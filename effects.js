@@ -1,5 +1,3 @@
-const DEBUG = true;
-
 const sliders = [
   'pitchShift', 'formantShift', 'reverb', 'distortion', 'echo',
   'bitcrusher', 'vocoder', 'chorus', 'phaser', 'autotune',
@@ -175,7 +173,7 @@ function updateAudioEffects(audioCtx, audioNodes, toneEffects, impulseResponse) 
     audioNodes.highpass.frequency.setValueAtTime(parseFloat(document.getElementById('highpass').value), audioCtx.currentTime);
     audioNodes.subBass.gain.setValueAtTime(parseFloat(document.getElementById('subBass').value) * 20, audioCtx.currentTime);
     audioNodes.vocoderGain.gain.setValueAtTime(parseFloat(document.getElementById('vocoder').value), audioCtx.currentTime);
-    audioNodes.noiseGain.gain.setValueAtTime(parseFloat(document.getElementById('distortion').value) * 0.1, audioCtx.currentTime); // Noise tied to distortion for Radio
+    audioNodes.noiseGain.gain.setValueAtTime(parseFloat(document.getElementById('distortion').value) * 0.1, audioCtx.currentTime);
 
     const formantShift = parseFloat(document.getElementById('formantShift').value);
     audioNodes.highpass.frequency.setValueAtTime(formantShift > 0 ? formantShift * 100 : 0, audioCtx.currentTime);
@@ -212,7 +210,6 @@ function makeDistortionCurve(amount) {
   return curve;
 }
 
-// Export for main.js
 window.EffectsManager = {
   setupSliders,
   resetEffects,
