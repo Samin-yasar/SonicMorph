@@ -48,7 +48,7 @@ async function applyPreset(preset, initAudio, updateAudioEffects) {
       reverb: 0, distortion: 0, echo: 0, phaser: 0, autotune: 0, highpass: 0, subBass: 0
     },
     alien: {
-      pitchShift: 6, formantShift: 2, echo: 0.4, reverb: 0.5, phaser: 0.6,
+      pitchShift: 6, formantShift: 4, echo: 0.4, reverb: 0.5, phaser: 0.6,
       distortion: 0, bitcrusher: 0, vocoder: 0, chorus: 0, autotune: 0, highpass: 0, subBass: 0
     },
     cyberbot: {
@@ -60,16 +60,16 @@ async function applyPreset(preset, initAudio, updateAudioEffects) {
       distortion: 0, echo: 0, bitcrusher: 0, vocoder: 0, phaser: 0, autotune: 0, subBass: 0
     },
     chipmunk: {
-      pitchShift: 10, formantShift: 3, reverb: 0, distortion: 0, echo: 0,
+      pitchShift: 12, formantShift: 3, reverb: 0, distortion: 0, echo: 0,
       bitcrusher: 0, vocoder: 0, chorus: 0, phaser: 0, autotune: 0, highpass: 0, subBass: 0
     },
     demon: {
-      pitchShift: -10, formantShift: -2, reverb: 0.6, distortion: 0.5, subBass: 0.7,
+      pitchShift: -12, formantShift: -2, reverb: 0.6, distortion: 0.5, subBass: 0.7,
       echo: 0, bitcrusher: 0, vocoder: 0, chorus: 0, phaser: 0, autotune: 0, highpass: 0
     },
     radio: {
-      pitchShift: 0, highpass: 300, reverb: 0.2, echo: 0.1, distortion: 0.3,
-      formantShift: 0, bitcrusher: 0, vocoder: 0, chorus: 0, phaser: 0, autotune: 0, subBass: 0
+      pitchShift: 0, formantShift: 0, highpass: 300, reverb: 0.2, echo: 0.1, distortion: 0.3,
+      bitcrusher: 0.2, vocoder: 0, chorus: 0, phaser: 0, autotune: 0, subBass: 0
     },
     normal: {
       pitchShift: 0, formantShift: 0, reverb: 0, distortion: 0, echo: 0,
@@ -175,10 +175,13 @@ function updateAudioEffects(audioCtx, audioNodes, toneEffects, impulseResponse) 
     audioNodes.highpass.frequency.setValueAtTime(parseFloat(document.getElementById('highpass').value), audioCtx.currentTime);
     audioNodes.subBass.gain.setValueAtTime(parseFloat(document.getElementById('subBass').value) * 20, audioCtx.currentTime);
     audioNodes.vocoderGain.gain.setValueAtTime(parseFloat(document.getElementById('vocoder').value), audioCtx.currentTime);
-    audioNodes.ringModGain.gain.setValueAtTime(parseFloat(document.getElementById('bitcrusher').value) * 0.5, audioCtx.currentTime);
+    audioNodes.noiseGain.gain.setValueAtTime(parseFloat(document.getElementById('distortion').value) * 0.1, audioCtx.currentTime); // Noise tied to distortion for Radio
+
+    const formantShift = parseFloat(document.getElementById('formantShift').value);
+    audioNodes.highpass.frequency.setValueAtTime(formantShift > 0 ? formantShift * 100 : 0, audioCtx.currentTime);
 
     if (toneEffects.pitch) {
-      toneEffects.pitch.pitch = parseFloat(document.getElementById('pitchShift').value) + parseFloat(document.getElementById('formantShift').value);
+      toneEffects.pitch.pitch = parseFloat(document.getElementById('pitchShift').value) + (formantShift * 0.5);
       toneEffects.pitch.wet.setValueAtTime(parseFloat(document.getElementById('reverb').value), Tone.immediate());
     }
     if (toneEffects.chorus) {
@@ -188,6 +191,7 @@ function updateAudioEffects(audioCtx, audioNodes, toneEffects, impulseResponse) 
       toneEffects.phaser.wet.setValueAtTime(parseFloat(document.getElementById('phaser').value), Tone.immediate());
     }
     if (toneEffects.autotune) {
+      toneEffects.autotune.frequency.setValueAtTime(parseFloat(document.getElementById('autotune').value) * 10, Tone.immediate());
       toneEffects.autotune.wet.setValueAtTime(parseFloat(document.getElementById('autotune').value), Tone.immediate());
     }
   } catch (err) {
