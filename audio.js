@@ -1,5 +1,3 @@
-const DEBUG = true;
-
 let audioCtx, analyser, visualizerCanvas, visualizerCtx;
 let audioNodes = {};
 let toneEffects = {};
