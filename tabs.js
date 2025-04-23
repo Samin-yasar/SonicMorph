@@ -1,5 +1,3 @@
-const DEBUG = true;
-
 function initTabs() {
   const tabs = document.querySelectorAll('.tab');
   const tabContents = document.querySelectorAll('.tab-content');
