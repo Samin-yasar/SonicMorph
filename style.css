@@ -38,6 +38,17 @@ body {
   backdrop-filter: blur(10px);
 }
 
+.compliance-bar {
+  margin-bottom: 1rem;
+  text-align: center;
+  color: #bfdbfe;
+  font-size: 0.95rem;
+}
+
+.compliance-bar input {
+  margin-right: 0.4rem;
+}
+
 /* Heading */
 h1 {
   text-align: center;
@@ -320,6 +331,29 @@ h1 {
   font-size: 1rem;
   color: #93c5fd;
   font-weight: 500;
+}
+
+.latency-panel {
+  text-align: center;
+  margin-top: 0.75rem;
+  color: #93c5fd;
+  font-size: 0.95rem;
+}
+
+.modified-indicator {
+  display: none;
+  margin: 0.5rem auto 1rem;
+  width: fit-content;
+  padding: 0.35rem 0.7rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid #10b981;
+  color: #bbf7d0;
+  font-size: 0.85rem;
+}
+
+.modified-indicator.show {
+  display: block;
 }
 
 /* Screen Reader Only */

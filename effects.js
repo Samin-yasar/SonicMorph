@@ -69,6 +69,18 @@ async function applyPreset(preset, initAudio, updateAudioEffects) {
       pitchShift: 0, formantShift: 0, highpass: 300, reverb: 0.2, echo: 0.1, distortion: 0.3,
       bitcrusher: 0.2, vocoder: 0, chorus: 0, phaser: 0, autotune: 0, subBass: 0
     },
+    privacyLight: {
+      pitchShift: 2, formantShift: 0.5, reverb: 0.15, distortion: 0.1, echo: 0.1,
+      bitcrusher: 0.1, vocoder: 0.2, chorus: 0.15, phaser: 0.1, autotune: 0, highpass: 80, subBass: 0
+    },
+    privacyModerate: {
+      pitchShift: 5, formantShift: 1.2, reverb: 0.25, distortion: 0.25, echo: 0.2,
+      bitcrusher: 0.25, vocoder: 0.35, chorus: 0.2, phaser: 0.2, autotune: 0.1, highpass: 180, subBass: 0
+    },
+    privacyStrong: {
+      pitchShift: 8, formantShift: 2, reverb: 0.35, distortion: 0.4, echo: 0.3,
+      bitcrusher: 0.45, vocoder: 0.5, chorus: 0.3, phaser: 0.35, autotune: 0.15, highpass: 280, subBass: 0
+    },
     normal: {
       pitchShift: 0, formantShift: 0, reverb: 0, distortion: 0, echo: 0,
       bitcrusher: 0, vocoder: 0, chorus: 0, phaser: 0, autotune: 0, highpass: 0, subBass: 0
