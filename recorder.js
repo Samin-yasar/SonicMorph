@@ -50,7 +50,13 @@ function updateModifiedIndicator(show) {
 }
 
 function appendSessionAudit(eventType) {
-  const previous = JSON.parse(localStorage.getItem(sessionLogKey) || '[]');
+  let previous = [];
+  try {
+    previous = JSON.parse(localStorage.getItem(sessionLogKey) || '[]');
+    if (!Array.isArray(previous)) previous = [];
+  } catch (err) {
+    previous = [];
+  }
   const next = [
     ...previous,
     {

@@ -164,7 +164,6 @@ async function initAudio() {
     isAudioInitialized = true;
     latencyStats.startedAt = Date.now();
     samplePipelineLatency();
-    cleanupAudioTelemetry();
     latencyIntervalId = setInterval(samplePipelineLatency, 1000);
     document.getElementById('status').textContent = 'Audio initialized successfully';
     if (DEBUG) console.log('audio.js: Audio initialized');

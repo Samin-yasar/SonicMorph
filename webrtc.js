@@ -15,7 +15,11 @@ const WebRTCRouter = (() => {
     const existingSenders = peerConnection.getSenders ? peerConnection.getSenders() : [];
     const audioSender = existingSenders.find(sender => sender.track && sender.track.kind === 'audio');
     if (audioSender) {
-      await audioSender.replaceTrack(audioTrack);
+      try {
+        await audioSender.replaceTrack(audioTrack);
+      } catch (err) {
+        throw new Error(`Failed to replace outbound audio track: ${err.message}`);
+      }
       return audioSender;
     }
     return peerConnection.addTrack(audioTrack, processedStream);
