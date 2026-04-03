@@ -13,11 +13,13 @@ function enableAudioControls() {
       if (DEBUG) console.log(`app.js: Enabled slider #${slider}`);
     }
   });
+  const consentCheckbox = document.getElementById('consentCheckbox');
+  const hasConsent = !!(consentCheckbox && consentCheckbox.checked);
   const buttons = ['startBtn', 'liveBtn'];
   buttons.forEach(id => {
     const btn = document.getElementById(id);
     if (btn) {
-      btn.disabled = false;
+      btn.disabled = !hasConsent;
       if (DEBUG) console.log(`app.js: Enabled control button #${id}`);
     }
   });
@@ -26,6 +28,7 @@ function enableAudioControls() {
 document.addEventListener('DOMContentLoaded', () => {
   if (DEBUG) console.log('app.js: DOMContentLoaded');
   try {
+    const consentCheckbox = document.getElementById('consentCheckbox');
     // Disable controls initially
     const sliders = [
       'pitchShift', 'formantShift', 'reverb', 'distortion', 'echo',
@@ -41,6 +44,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const btn = document.getElementById(id);
       if (btn) btn.disabled = true;
     });
+    if (consentCheckbox) {
+      consentCheckbox.addEventListener('change', () => {
+        const startBtn = document.getElementById('startBtn');
+        const liveBtn = document.getElementById('liveBtn');
+        const enabled = consentCheckbox.checked;
+        if (startBtn) startBtn.disabled = !enabled;
+        if (liveBtn) liveBtn.disabled = !enabled;
+        document.getElementById('status').textContent = enabled
+          ? 'Consent acknowledged. You can start voice modification.'
+          : 'Consent required before using voice modification.';
+      });
+    }
 
     // Initialize modules
     window.StarAnimation.init();
@@ -56,10 +71,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const startBtn = document.getElementById('startBtn');
     if (startBtn) {
       startBtn.addEventListener('click', async () => {
+        if (consentCheckbox && !consentCheckbox.checked) {
+          document.getElementById('status').textContent = 'Consent required before starting recording.';
+          return;
+        }
         const success = await initAudio();
         if (success) {
           enableAudioControls();
-          startRecording(getAudioContext(), getNodes(), visualize);
+          startRecording(initAudio, getAudioContext(), getNodes(), visualize);
         }
       });
       if (DEBUG) console.log('app.js: Bound startBtn click');
@@ -82,10 +101,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const liveBtn = document.getElementById('liveBtn');
     if (liveBtn) {
       liveBtn.addEventListener('click', async () => {
+        if (consentCheckbox && !consentCheckbox.checked) {
+          document.getElementById('status').textContent = 'Consent required before starting live mode.';
+          return;
+        }
         const success = await initAudio();
         if (success) {
           enableAudioControls();
-          startLive(getAudioContext(), getNodes(), visualize);
+          startLive(initAudio, getAudioContext(), getNodes(), visualize);
         }
       });
       if (DEBUG) console.log('app.js: Bound liveBtn click');
@@ -93,10 +116,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const uploadAudio = document.getElementById('uploadAudio');
     if (uploadAudio) {
       uploadAudio.addEventListener('change', async () => {
+        if (consentCheckbox && !consentCheckbox.checked) {
+          document.getElementById('status').textContent = 'Consent required before processing uploaded audio.';
+          return;
+        }
         const success = await initAudio();
         if (success) {
           enableAudioControls();
-          loadAudioFile(getAudioContext(), getNodes(), visualize);
+          loadAudioFile(initAudio, getAudioContext(), getNodes(), visualize);
         }
       });
       if (DEBUG) console.log('app.js: Bound uploadAudio change');

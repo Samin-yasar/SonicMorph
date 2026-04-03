@@ -3,6 +3,8 @@ let audioNodes = {};
 let toneEffects = {};
 let impulseResponse = null;
 let isAudioInitialized = false;
+let processedDestination = null;
+let latencyStats = { startedAt: 0, lastMs: 0 };
 const isLowEndDevice = window.innerWidth * window.innerHeight > 1000000;
 
 function showLoadingIndicator() {
@@ -19,6 +21,20 @@ function hideLoadingIndicator() {
     indicator.classList.remove('show');
     if (DEBUG) console.log('audio.js: Hiding loading indicator');
   }
+}
+
+function updateLatencyPanel(ms) {
+  const panel = document.getElementById('latency-panel');
+  if (panel) {
+    panel.textContent = `Pipeline latency: ${ms.toFixed(2)} ms`;
+  }
+}
+
+function samplePipelineLatency() {
+  if (!audioCtx) return;
+  const currentLatency = ((audioCtx.baseLatency || 0) + (audioCtx.outputLatency || 0)) * 1000;
+  latencyStats.lastMs = currentLatency;
+  updateLatencyPanel(currentLatency);
 }
 
 async function initAudio() {
@@ -39,6 +55,7 @@ async function initAudio() {
     await Tone.start();
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = isLowEndDevice ? 256 : 512;
+    processedDestination = audioCtx.createMediaStreamDestination();
 
     audioNodes = {
       gain: audioCtx.createGain(),
@@ -116,6 +133,7 @@ async function initAudio() {
       chain[i].connect(chain[i + 1]);
     }
     analyser.connect(audioCtx.destination);
+    analyser.connect(processedDestination);
     audioNodes.vocoderModulator.connect(audioNodes.vocoderGain.gain);
     audioNodes.vocoderCarrier.connect(audioNodes.vocoderGain);
     audioNodes.vocoderGain.connect(analyser);
@@ -136,6 +154,9 @@ async function initAudio() {
     }
 
     isAudioInitialized = true;
+    latencyStats.startedAt = Date.now();
+    samplePipelineLatency();
+    setInterval(samplePipelineLatency, 1000);
     document.getElementById('status').textContent = 'Audio initialized successfully';
     if (DEBUG) console.log('audio.js: Audio initialized');
     return true;
@@ -211,5 +232,7 @@ window.AudioManager = {
   getNodes: () => audioNodes,
   getToneEffects: () => toneEffects,
   getImpulseResponse: () => impulseResponse,
+  getProcessedStream: () => processedDestination ? processedDestination.stream : null,
+  getLatencyStats: () => ({ ...latencyStats, budgetMs: 50, withinBudget: latencyStats.lastMs < 50 }),
   visualize
 };

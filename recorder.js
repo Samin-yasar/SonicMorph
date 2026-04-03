@@ -6,6 +6,7 @@ let isRecording = false;
 let isLive = false;
 let audioData = null;
 let uploadedSource = null;
+const sessionLogKey = 'session_audit_log';
 
 function showLoadingIndicator() {
   const indicator = document.getElementById('loading-indicator');
@@ -37,7 +38,35 @@ function updateLiveIndicator() {
   }
 }
 
+function hasConsent() {
+  const consent = document.getElementById('consentCheckbox');
+  return !!(consent && consent.checked);
+}
+
+function updateModifiedIndicator(show) {
+  const indicator = document.getElementById('modified-indicator');
+  if (!indicator) return;
+  indicator.classList.toggle('show', !!show);
+}
+
+function appendSessionAudit(eventType) {
+  const previous = JSON.parse(localStorage.getItem(sessionLogKey) || '[]');
+  const next = [
+    ...previous,
+    {
+      eventType,
+      timestamp: new Date().toISOString(),
+      mode: isRecording ? 'recording' : (isLive ? 'live' : 'idle')
+    }
+  ].slice(-200);
+  localStorage.setItem(sessionLogKey, JSON.stringify(next));
+}
+
 async function startRecording(initAudio, audioCtx, audioNodes, visualize) {
+  if (!hasConsent()) {
+    document.getElementById('status').textContent = 'Consent required before using voice modification.';
+    return;
+  }
   const success = await initAudio();
   if (!success) return;
   showLoadingIndicator();
@@ -67,6 +96,8 @@ async function startRecording(initAudio, audioCtx, audioNodes, visualize) {
     source.connect(audioNodes.gain);
     recorder.start();
     isRecording = true;
+    updateModifiedIndicator(true);
+    appendSessionAudit('start_recording');
     document.getElementById('status').textContent = 'Recording...';
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
@@ -87,6 +118,8 @@ function stopRecording() {
     recorder.stop();
     mediaStream.getTracks().forEach(track => track.stop());
     isRecording = false;
+    updateModifiedIndicator(false);
+    appendSessionAudit('stop_recording');
     document.getElementById('status').textContent = 'Recording stopped';
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
@@ -116,6 +149,10 @@ function downloadRecording() {
 }
 
 async function startLive(initAudio, audioCtx, audioNodes, visualize) {
+  if (!hasConsent()) {
+    document.getElementById('status').textContent = 'Consent required before using voice modification.';
+    return;
+  }
   const success = await initAudio();
   if (!success) return;
   showLoadingIndicator();
@@ -137,6 +174,8 @@ async function startLive(initAudio, audioCtx, audioNodes, visualize) {
       liveBtn.classList.add('live-active');
     }
     isLive = true;
+    updateModifiedIndicator(true);
+    appendSessionAudit('start_live');
     updateLiveIndicator();
     visualize(isRecording, isLive, uploadedSource);
   } catch (err) {
@@ -151,6 +190,8 @@ function stopLive() {
   if (isLive) {
     mediaStream.getTracks().forEach(track => track.stop());
     isLive = false;
+    updateModifiedIndicator(false);
+    appendSessionAudit('stop_live');
     document.getElementById('status').textContent = 'Live mode stopped';
     const liveBtn = document.getElementById('liveBtn');
     if (liveBtn) {
