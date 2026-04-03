@@ -1,5 +1,5 @@
 const WebRTCRouter = (() => {
-  function attachProcessedAudioToPeerConnection(peerConnection, processedStream) {
+  async function attachProcessedAudioToPeerConnection(peerConnection, processedStream) {
     if (!peerConnection || typeof peerConnection.addTrack !== 'function') {
       throw new Error('Invalid RTCPeerConnection instance');
     }
@@ -15,7 +15,7 @@ const WebRTCRouter = (() => {
     const existingSenders = peerConnection.getSenders ? peerConnection.getSenders() : [];
     const audioSender = existingSenders.find(sender => sender.track && sender.track.kind === 'audio');
     if (audioSender) {
-      audioSender.replaceTrack(audioTrack);
+      await audioSender.replaceTrack(audioTrack);
       return audioSender;
     }
     return peerConnection.addTrack(audioTrack, processedStream);

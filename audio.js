@@ -5,6 +5,7 @@ let impulseResponse = null;
 let isAudioInitialized = false;
 let processedDestination = null;
 let latencyStats = { startedAt: 0, lastMs: 0 };
+let latencyIntervalId = null;
 const isLowEndDevice = window.innerWidth * window.innerHeight > 1000000;
 
 function showLoadingIndicator() {
@@ -35,6 +36,13 @@ function samplePipelineLatency() {
   const currentLatency = ((audioCtx.baseLatency || 0) + (audioCtx.outputLatency || 0)) * 1000;
   latencyStats.lastMs = currentLatency;
   updateLatencyPanel(currentLatency);
+}
+
+function cleanupAudioTelemetry() {
+  if (latencyIntervalId) {
+    clearInterval(latencyIntervalId);
+    latencyIntervalId = null;
+  }
 }
 
 async function initAudio() {
@@ -156,7 +164,8 @@ async function initAudio() {
     isAudioInitialized = true;
     latencyStats.startedAt = Date.now();
     samplePipelineLatency();
-    setInterval(samplePipelineLatency, 1000);
+    cleanupAudioTelemetry();
+    latencyIntervalId = setInterval(samplePipelineLatency, 1000);
     document.getElementById('status').textContent = 'Audio initialized successfully';
     if (DEBUG) console.log('audio.js: Audio initialized');
     return true;
@@ -170,6 +179,8 @@ async function initAudio() {
     hideLoadingIndicator();
   }
 }
+
+window.addEventListener('beforeunload', cleanupAudioTelemetry);
 
 function createImpulseResponse() {
   const length = audioCtx.sampleRate * 1;
