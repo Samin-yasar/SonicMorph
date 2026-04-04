@@ -184,15 +184,19 @@ function updateAudioEffects(audioCtx, audioNodes, toneEffects, impulseResponse) 
     audioNodes.echo.delayTime.setValueAtTime(parseFloat(document.getElementById('echo').value), audioCtx.currentTime);
     audioNodes.highpass.frequency.setValueAtTime(parseFloat(document.getElementById('highpass').value), audioCtx.currentTime);
     audioNodes.subBass.gain.setValueAtTime(parseFloat(document.getElementById('subBass').value) * 20, audioCtx.currentTime);
-    audioNodes.vocoderGain.gain.setValueAtTime(parseFloat(document.getElementById('vocoder').value), audioCtx.currentTime);
+    if (audioNodes.vocoderAmount) {
+      audioNodes.vocoderAmount.gain.setValueAtTime(parseFloat(document.getElementById('vocoder').value) * 2, audioCtx.currentTime);
+    }
     audioNodes.noiseGain.gain.setValueAtTime(parseFloat(document.getElementById('distortion').value) * 0.1, audioCtx.currentTime);
 
     const formantShift = parseFloat(document.getElementById('formantShift').value);
     audioNodes.highpass.frequency.setValueAtTime(formantShift > 0 ? formantShift * 100 : 0, audioCtx.currentTime);
 
     if (toneEffects.pitch) {
-      toneEffects.pitch.pitch = parseFloat(document.getElementById('pitchShift').value) + (formantShift * 0.5);
-      toneEffects.pitch.wet.setValueAtTime(parseFloat(document.getElementById('reverb').value), Tone.immediate());
+      const pitchVal = parseFloat(document.getElementById('pitchShift').value);
+      toneEffects.pitch.pitch = pitchVal + (formantShift * 0.5);
+      const isPitchActive = (pitchVal !== 0 || formantShift !== 0);
+      toneEffects.pitch.wet.setValueAtTime(isPitchActive ? 1.0 : 0.0, Tone.immediate());
     }
     if (toneEffects.chorus) {
       toneEffects.chorus.wet.setValueAtTime(parseFloat(document.getElementById('chorus').value), Tone.immediate());

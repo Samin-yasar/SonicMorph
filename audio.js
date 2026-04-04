@@ -55,7 +55,7 @@ async function initAudio() {
     if (typeof Tone === 'undefined') {
       throw new Error('Tone.js not loaded. Check CDN or local script.');
     }
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive', sampleRate: 44100 });
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
     
     // Resume audio context if suspended
     if (audioCtx.state === 'suspended') {
@@ -87,6 +87,7 @@ async function initAudio() {
       subBass: audioCtx.createBiquadFilter(),
       vocoderModulator: audioCtx.createGain(),
       vocoderCarrier: audioCtx.createOscillator(),
+      vocoderAmount: audioCtx.createGain(),
       vocoderGain: audioCtx.createGain(),
       bitcrusher: audioCtx.createScriptProcessor(4096, 1, 1),
       noise: audioCtx.createBufferSource(),
@@ -108,6 +109,7 @@ async function initAudio() {
     audioNodes.vocoderCarrier.frequency.setValueAtTime(440, audioCtx.currentTime);
     audioNodes.vocoderCarrier.start();
     audioNodes.vocoderGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    audioNodes.vocoderAmount.gain.setValueAtTime(0, audioCtx.currentTime);
     audioNodes.noiseGain.gain.setValueAtTime(0, audioCtx.currentTime);
 
     const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
@@ -147,17 +149,29 @@ async function initAudio() {
       audioNodes.bitcrusher,
       audioNodes.vocoderModulator,
       audioNodes.reverb,
-      audioNodes.echo,
-      analyser
+      audioNodes.echo
     ];
     for (let i = 0; i < chain.length - 1; i++) {
       chain[i].connect(chain[i + 1]);
     }
+    
+    // Connect Web Audio to Tone.js chain
+    Tone.connect(audioNodes.echo, toneEffects.pitch);
+    toneEffects.pitch.connect(toneEffects.chorus);
+    toneEffects.chorus.connect(toneEffects.phaser);
+    toneEffects.phaser.connect(toneEffects.autotune);
+    
+    // Connect output of Tone.js chain to analyser
+    toneEffects.autotune.connect(analyser);
+
     analyser.connect(audioCtx.destination);
     analyser.connect(processedDestination);
-    audioNodes.vocoderModulator.connect(audioNodes.vocoderGain.gain);
+    
+    audioNodes.vocoderModulator.connect(audioNodes.vocoderAmount);
+    audioNodes.vocoderAmount.connect(audioNodes.vocoderGain.gain);
     audioNodes.vocoderCarrier.connect(audioNodes.vocoderGain);
-    audioNodes.vocoderGain.connect(analyser);
+    Tone.connect(audioNodes.vocoderGain, toneEffects.pitch);
+
     audioNodes.noise.connect(audioNodes.noiseGain);
     audioNodes.noiseGain.connect(analyser);
 
