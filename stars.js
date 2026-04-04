@@ -4,6 +4,7 @@ const ctx = canvas ? canvas.getContext('2d') : null;
 let stars = [];
 let mouseX = 0, mouseY = 0;
 let animationId;
+const DEBUG = true;
 const isLowEndDevice = window.innerWidth * window.innerHeight > 1000000;
 
 if (!canvas || !ctx) {

@@ -1,4 +1,4 @@
-const DEBUG = true;
+// DEBUG is now declared in stars.js
 
 let source, recorder, chunks = [];
 let mediaStream = null;

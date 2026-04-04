@@ -6,7 +6,7 @@ let isAudioInitialized = false;
 let processedDestination = null;
 let latencyStats = { startedAt: 0, lastMs: 0 };
 let latencyIntervalId = null;
-const isLowEndDevice = window.innerWidth * window.innerHeight > 1000000;
+// isLowEndDevice is now declared in stars.js
 
 function showLoadingIndicator() {
   const indicator = document.getElementById('loading-indicator');
@@ -56,11 +56,24 @@ async function initAudio() {
       throw new Error('Tone.js not loaded. Check CDN or local script.');
     }
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive', sampleRate: 44100 });
+    
+    // Resume audio context if suspended
     if (audioCtx.state === 'suspended') {
       await audioCtx.resume();
     }
-    Tone.setContext(new Tone.Context({ latencyHint: 'interactive', lookAhead: 0 }));
+    
+    // Initialize Tone.js context if not already done
+    if (Tone.getContext().rawContext !== audioCtx) {
+      Tone.setContext(new Tone.Context({ 
+        context: audioCtx,
+        latencyHint: 'interactive', 
+        lookAhead: 0 
+      }));
+    }
+
+    // Start Tone.js
     await Tone.start();
+    
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = isLowEndDevice ? 256 : 512;
     processedDestination = audioCtx.createMediaStreamDestination();

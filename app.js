@@ -1,4 +1,4 @@
-const DEBUG = true;
+// DEBUG is now declared in stars.js
 
 function enableAudioControls() {
   const sliders = [
